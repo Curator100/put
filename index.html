@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CYBERPUNK EXAM v2.0.77</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyber-yellow: #F0FF00;
+            --cyber-pink: #FF003C;
+            --cyber-blue: #00F0FF;
+            --cyber-black: #0D0D0D;
+            --cyber-dark-blue: #101622;
+            --cyber-neon: #2DE2E6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background-color: var(--cyber-dark-blue);
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(45deg, transparent 48%, var(--cyber-blue) 49%, transparent 51%),
+                linear-gradient(-45deg, transparent 48%, var(--cyber-pink) 49%, transparent 51%);
+            background-size: 3px 3px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        header {
+            background: var(--cyber-black);
+            padding: 1rem;
+            border-bottom: 2px solid var(--cyber-pink);
+            position: relative;
+            z-index: 1;
+        }
+
+        header h1 {
+            text-align: center;
+            color: var(--cyber-yellow);
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--cyber-yellow);
+        }
+
+        #timer {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--cyber-pink);
+            color: white;
+            padding: 0.5rem 1rem;
+            font-family: 'Share Tech Mono', monospace;
+            border: 1px solid var(--cyber-pink);
+            box-shadow: 0 0 10px var(--cyber-pink);
+            animation: pulse 2s infinite;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+        }
+
+        .questions-section {
+            flex: 2;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(13, 13, 13, 0.9);
+            border-bottom: 2px solid var(--cyber-blue);
+        }
+
+        .question {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-left: 3px solid var(--cyber-yellow);
+            background: rgba(16, 22, 34, 0.8);
+            position: relative;
+        }
+
+        .question::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -3px;
+            height: 100%;
+            width: 3px;
+            background: var(--cyber-yellow);
+            box-shadow: 0 0 10px var(--cyber-yellow);
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            color: var(--cyber-blue);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .options {
+            padding-left: 20px;
+            color: #fff;
+        }
+
+        .option {
+            margin: 10px 0;
+            padding: 5px;
+        }
+
+        .omr-section {
+            flex: 1;
+            overflow-y: auto;
+            background: rgba(13, 13, 13, 0.95);
+            padding: 20px;
+            border-top: 2px solid var(--cyber-neon);
+        }
+
+        .omr-title {
+            text-align: center;
+            color: var(--cyber-blue);
+            font-family: 'Share Tech Mono', monospace;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px var(--cyber-blue);
+        }
+
+        .omr-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .omr-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 400px;
+            background: rgba(0, 240, 255, 0.05);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .question-number {
+            width: 30px;
+            color: var(--cyber-yellow);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .bubble-group {
+            display: flex;
+            gap: 20px;
+            flex-grow: 1;
+            justify-content: space-around;
+        }
+
+        .bubble-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .bubble {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--cyber-blue);
+            border-radius: 50%;
+            cursor: pointer;
+            background: transparent;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .bubble:hover {
+            box-shadow: 0 0 10px var(--cyber-blue);
+        }
+
+        .bubble.clicked-once {
+            border-color: var(--cyber-yellow);
+            box-shadow: 0 0 10px var(--cyber-yellow);
+        }
+
+        .bubble.clicked-twice {
+            border-color: var(--cyber-pink);
+            box-shadow: 0 0 10px var(--cyber-pink);
+        }
+
+        .bubble.selected {
+            background: var(--cyber-blue);
+            border-color: var(--cyber-blue);
+            box-shadow: 0 0 15px var(--cyber-blue);
+        }
+
+        .bubble-label {
+            color: var(--cyber-neon);
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        #submitBtn {
+            display: block;
+            width: 200px;
+            margin: 20px auto 0;
+            padding: 10px;
+            background: var(--cyber-pink);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Share Tech Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #submitBtn:hover {
+            box-shadow: 0 0 20px var(--cyber-pink);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 10px var(--cyber-pink); }
+            50% { box-shadow: 0 0 20px var(--cyber-pink); }
+            100% { box-shadow: 0 0 10px var(--cyber-pink); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--cyber-dark-blue);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--cyber-pink);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cyber-blue);
+        }
+    </style>
+</head><body>
+    <header>
+        <h1>CYBERPUNK EXAM v2.0.77</h1>
+        <div id="timer">25:00</div>
+    </header>
+
+    <div class="container">
+        <div class="questions-section">
+            <div class="question">
+                <div class="question-text">Q1: In the world of cybernetics, what is the common term for a direct neural interface between the human brain and computer systems?</div>
+                <div class="options">
+                    <div class="option">A) Neural Link</div>
+                    <div class="option">B) Brain Port</div>
+                    <div class="option">C) Neural Jack</div>
+                    <div class="option">D) Mind Bridge</div>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">Q2: Which programming language is considered the foundation of modern quantum computing?</div>
+                <div class="options">
+                    <div class="option">A) Q#</div>
+                    <div class="option">B) Qiskit</div>
+                    <div class="option">C) Cirq</div>
+                    <div class="option">D) QuTiP</div>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">Q3: What is the primary function of a blockchain's consensus mechanism?</div>
+                <div class="options">
+                    <div class="option">A) Data Encryption</div>
+                    <div class="option">B) Transaction Validation</div>
+                    <div class="option">C) Network Security</div>
+                    <div class="option">D) Smart Contract Execution</div>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">Q4: In cybersecurity, what is a "Zero-Day Exploit"?</div>
+                <div class="options">
+                    <div class="option">A) A virus that deletes all data</div>
+                    <div class="option">B) An attack using an unknown vulnerability</div>
+                    <div class="option">C) A system without security</div>
+                    <div class="option">D) A 24-hour security breach</div>
+                </div>
+            </div>
+
+            <div class="question">
+                <div class="question-text">Q5: What technology is fundamental to the creation of autonomous vehicles?</div>
+                <div class="options">
+                    <div class="option">A) LIDAR</div>
+                    <div class="option">B) Bluetooth</div>
+                    <div class="option">C) Wi-Fi</div>
+                    <div class="option">D) GPS</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="omr-section">
+            <div class="omr-title">NEURAL RESPONSE GRID</div>
+            <div class="omr-grid">
+                <div class="omr-row">
+                    <span class="question-number">01</span>
+                    <div class="bubble-group">
+                        <div class="bubble-container">
+                            <span class="bubble-label">A</span>
+                            <div class="bubble" data-question="1" data-option="A"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">B</span>
+                            <div class="bubble" data-question="1" data-option="B"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">C</span>
+                            <div class="bubble" data-question="1" data-option="C"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">D</span>
+                            <div class="bubble" data-question="1" data-option="D"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Repeat for questions 2-5 -->
+                <div class="omr-row">
+                    <span class="question-number">02</span>
+                    <div class="bubble-group">
+                        <div class="bubble-container">
+                            <span class="bubble-label">A</span>
+                            <div class="bubble" data-question="2" data-option="A"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">B</span>
+                            <div class="bubble" data-question="2" data-option="B"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">C</span>
+                            <div class="bubble" data-question="2" data-option="C"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">D</span>
+                            <div class="bubble" data-question="2" data-option="D"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="omr-row">
+                    <span class="question-number">03</span>
+                    <div class="bubble-group">
+                        <div class="bubble-container">
+                            <span class="bubble-label">A</span>
+                            <div class="bubble" data-question="3" data-option="A"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">B</span>
+                            <div class="bubble" data-question="3" data-option="B"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">C</span>
+                            <div class="bubble" data-question="3" data-option="C"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">D</span>
+                            <div class="bubble" data-question="3" data-option="D"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="omr-row">
+                    <span class="question-number">04</span>
+                    <div class="bubble-group">
+                        <div class="bubble-container">
+                            <span class="bubble-label">A</span>
+                            <div class="bubble" data-question="4" data-option="A"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">B</span>
+                            <div class="bubble" data-question="4" data-option="B"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">C</span>
+                            <div class="bubble" data-question="4" data-option="C"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">D</span>
+                            <div class="bubble" data-question="4" data-option="D"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="omr-row">
+                    <span class="question-number">05</span>
+                    <div class="bubble-group">
+                        <div class="bubble-container">
+                            <span class="bubble-label">A</span>
+                            <div class="bubble" data-question="5" data-option="A"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">B</span>
+                            <div class="bubble" data-question="5" data-option="B"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">C</span>
+                            <div class="bubble" data-question="5" data-option="C"></div>
+                        </div>
+                        <div class="bubble-container">
+                            <span class="bubble-label">D</span>
+                            <div class="bubble" data-question="5" data-option="D"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="submitBtn">UPLOAD RESPONSES</button>
+        </div>
+    </div>
+
+    <script>
+        let clickCounts = {};
+        let selectedAnswers = {};
+
+        // Correct answers
+        const correctAnswers = {
+            '1': 'C',
+            '2': 'A',
+            '3': 'B',
+            '4': 'B',
+            '5': 'A'
+        };
+
+        // Initialize bubble click handlers
+        document.querySelectorAll('.bubble').forEach(bubble => {
+            const qId = bubble.dataset.question;
+            const option = bubble.dataset.option;
+            const key = `${qId}-${option}`;
+            
+            clickCounts[key] = 0;
+
+            bubble.addEventListener('click', function() {
+                if (!selectedAnswers[qId]) {
+                    clickCounts[key]++;
+                    
+                    if (clickCounts[key] === 1) {
+                        this.classList.add('clicked-once');
+                        // Add cyberpunk sound effect here if desired
+                    } else if (clickCounts[key] === 2) {
+                        this.classList.remove('clicked-once');
+                        this.classList.add('clicked-twice');
+                    } else if (clickCounts[key] === 3) {
+                        selectedAnswers[qId] = option;
+                        this.classList.remove('clicked-twice');
+                        this.classList.add('selected');
+                        
+                        // Disable other options for this question
+                        document.querySelectorAll(`.bubble[data-question="${qId}"]`).forEach(el => {
+                            if (el !== this) {
+                                el.style.pointerEvents = 'none';
+                                el.style.opacity = '0.5';
+                            }
+                        });
+                    }
+                }
+            });
+        });
+
+        // Timer functionality
+        let timeLeft = 25 * 60;
+        
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft === 0) {
+                clearInterval(timerInterval);
+                alert("TIME LIMIT EXCEEDED - NEURAL LINK TERMINATED");
+                submitExam();
+            } else {
+                timeLeft--;
+            }
+        }
+
+        const timerInterval = setInterval(updateTimer, 1000);
+
+        function submitExam() {
+            clearInterval(timerInterval);
+            let score = 0;
+            
+            for (let question in selectedAnswers) {
+                if (selectedAnswers[question] === correctAnswers[question]) {
+                    score++;
+                }
+            }
+
+            const totalQuestions = Object.keys(correctAnswers).length;
+            const answeredQuestions = Object.keys(selectedAnswers).length;
+            
+            if (answeredQuestions < totalQuestions) {
+                if (!confirm(`WARNING: Only ${answeredQuestions} of ${totalQuestions} neural responses recorded. Proceed with upload?`)) {
+                    return;
+                }
+            }
+
+            alert(`NEURAL LINK PERFORMANCE: ${score} / ${totalQuestions}\nUPLOAD COMPLETE`);
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'UPLOAD COMPLETE';
+        }
+
+        document.getElementById('submitBtn').addEventListener('click', submitExam);
+    </script>
+</body>
+</html>
